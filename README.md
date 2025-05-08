@@ -1,1 +1,1 @@
-#jpeg-compressor
+# jpeg-compressor
