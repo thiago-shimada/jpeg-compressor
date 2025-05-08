@@ -23,5 +23,6 @@ void free_ycbcr_image(YCbCr_Pixel **image, int height);
 void rgb_to_ycbcr(RGB_Pixel **rgb_image, YCbCr_Pixel **ycbcr_image, int width, int height);
 void ycbcr_to_rgb(YCbCr_Pixel **ycbcr_image, RGB_Pixel **rgb_image, int width, int height);
 int save_rgb_image(const char *filename, RGB_Pixel **image, BITMAPFILEHEADER *original_file_header, BITMAPINFOHEADER *original_info_header);
+YCbCr_Pixel **ycbcr_subsampling_420(YCbCr_Pixel **ycbcr_image, int width, int height);
 
 #endif

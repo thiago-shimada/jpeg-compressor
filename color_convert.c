@@ -128,3 +128,27 @@ void rgb_to_ycbcr(RGB_Pixel **rgb_image, YCbCr_Pixel **ycbcr_image, int width, i
         }
     }
 }
+
+YCbCr_Pixel **ycbcr_subsampling_420(YCbCr_Pixel **ycbcr_image, int width, int height) {
+    YCbCr_Pixel **subsampled_image = init_ycbcr_image(width, height);
+
+    for (int i = 0; i < height; i+=2) {
+        for (int j = 0; j < width; j+=2) {
+            // Average in the chromatic channels
+            unsigned char cb = (ycbcr_image[i][j].cb + ycbcr_image[i][j+1].cb + ycbcr_image[i+1][j].cb + ycbcr_image[i+1][j+1].cb) >> 2;
+            unsigned char cr = (ycbcr_image[i][j].cr + ycbcr_image[i][j+1].cr + ycbcr_image[i+1][j].cr + ycbcr_image[i+1][j+1].cr) >> 2;
+
+            // Assign all Y values to the subsampled image
+            subsampled_image[i][j].y = ycbcr_image[i][j].y;
+            subsampled_image[i+1][j].y = ycbcr_image[i+1][j].y;
+            subsampled_image[i][j+1].y = ycbcr_image[i][j+1].y;
+            subsampled_image[i+1][j+1].y = ycbcr_image[i+1][j+1].y;  
+            
+            // Assign the averaged chromatic values
+            subsampled_image[i][j].cb = subsampled_image[i+1][j].cb = subsampled_image[i][j+1].cb = subsampled_image[i+1][j+1].cb = cb;
+            subsampled_image[i][j].cr = subsampled_image[i+1][j].cr = subsampled_image[i][j+1].cr = subsampled_image[i+1][j+1].cr = cr;
+        }
+    }
+
+    return subsampled_image;
+}

@@ -1,5 +1,5 @@
 all:
-	gcc -o jpeg-bmp *.c
+	gcc -std=c99 -o jpeg-bmp *.c -lm
 
 run: 
 	./jpeg-bmp
