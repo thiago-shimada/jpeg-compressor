@@ -1,0 +1,130 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "bitmap.h"
+#include "color_convert.h"
+
+RGB_Pixel **init_rgb_image(int width, int height) {
+    RGB_Pixel **image = (RGB_Pixel **)malloc(height * sizeof(RGB_Pixel *));
+    for (int i = 0; i < height; i++) {
+        image[i] = (RGB_Pixel *)malloc(width * sizeof(RGB_Pixel));
+    }
+    return image;
+}
+
+void free_rgb_image(RGB_Pixel **image, int height) {
+    for (int i = 0; i < height; i++) {
+        free(image[i]);
+    }
+    free(image);
+}
+
+void read_rgb_image(FILE *fp, RGB_Pixel **image, BITMAPINFOHEADER info_header) {
+    int height = info_header.Height;
+    int width = info_header.Width;
+
+    fseek(fp, 54, SEEK_SET); // Skip the header
+
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            image[i][j].b = fgetc(fp);
+            image[i][j].g = fgetc(fp);
+            image[i][j].r = fgetc(fp);
+        }
+    }
+}
+
+int save_rgb_image(const char *filename, RGB_Pixel **image, BITMAPFILEHEADER *file_header, BITMAPINFOHEADER *info_header){
+    FILE *fp = fopen(filename, "wb");
+    if (fp == NULL) {
+        printf("Error opening file for writing: %s\n", filename);
+        return -1;
+    }
+
+    fwrite(&(file_header->Type), sizeof(unsigned short), 1, fp);
+    fwrite(&(file_header->Size), sizeof(unsigned int), 1, fp);
+    fwrite(&(file_header->Reserved1), sizeof(unsigned short), 1, fp);
+    fwrite(&(file_header->Reserved2), sizeof(unsigned short), 1, fp);
+    fwrite(&(file_header->OffBits), sizeof(unsigned int), 1, fp);
+
+    fwrite(&(info_header->Size), sizeof(unsigned int), 1, fp);
+    fwrite(&(info_header->Width), sizeof(int), 1, fp);
+    fwrite(&(info_header->Height), sizeof(int), 1, fp);
+    fwrite(&(info_header->Planes), sizeof(unsigned short int), 1, fp);
+    fwrite(&(info_header->BitCount), sizeof(unsigned short int), 1, fp);
+    fwrite(&(info_header->Compression), sizeof(unsigned int), 1, fp);
+    fwrite(&(info_header->SizeImage), sizeof(unsigned int), 1, fp);
+    fwrite(&(info_header->XResolution), sizeof(int), 1, fp);
+    fwrite(&(info_header->YResolution), sizeof(int), 1, fp);
+    fwrite(&(info_header->NColors), sizeof(unsigned int), 1, fp);
+    fwrite(&(info_header->ImportantColors), sizeof(unsigned int), 1, fp);
+
+    int height = info_header->Height;
+    int width = info_header->Width;
+
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            fputc(image[i][j].b, fp);
+            fputc(image[i][j].g, fp);
+            fputc(image[i][j].r, fp);
+        }
+    }
+
+    fclose(fp);
+
+    return 0;
+}
+
+YCbCr_Pixel **init_ycbcr_image(int width, int height){
+    YCbCr_Pixel **image = (YCbCr_Pixel **)malloc(height * sizeof(YCbCr_Pixel *));
+    for (int i = 0; i < height; i++) {
+        image[i] = (YCbCr_Pixel *)malloc(width * sizeof(YCbCr_Pixel));
+    }
+
+    return image;
+}
+
+void free_ycbcr_image(YCbCr_Pixel **image, int height) {
+    for (int i = 0; i < height; i++) {
+        free(image[i]);
+    }
+    free(image);
+}
+
+/*
+ * Receives a YCbCr matrix and a RGB matrix of same size. Converts RGB populated matrix into YCbCr
+ */
+void rgb_to_ycbcr(RGB_Pixel **rgb_image, YCbCr_Pixel **ycbcr_image, int width, int height) {
+    for(int i = 0; i < height; i++) {
+        for(int j = 0; j < width; j++) {
+            double r = (double)rgb_image[i][j].r;
+            double g = (double)rgb_image[i][j].g;
+            double b = (double)rgb_image[i][j].b;
+
+            double y = 0.299*r + 0.587*g + 0.114*b;
+            double cb = 128 - 0.168736*r - 0.331264*g + 0.5*b;
+            double cr = 128 + 0.5*r - 0.418688*g - 0.081312*b;
+
+            ycbcr_image[i][j].y = (unsigned char)(y < 0 ? 0 : (y > 255 ? 255 : y));
+            ycbcr_image[i][j].cb = (unsigned char)(cb < 0 ? 0 : (cb > 255 ? 255 : cb));
+            ycbcr_image[i][j].cr = (unsigned char)(cr < 0 ? 0 : (cr > 255 ? 255 : cr));
+        }
+    }
+}
+
+ void ycbcr_to_rgb(YCbCr_Pixel **ycbcr_image, RGB_Pixel **rgb_image, int width, int height) {
+    for(int i = 0; i < height; i++) {
+        for(int j = 0; j < width; j++) {
+            double y = (double)ycbcr_image[i][j].y;
+            double cb = (double)ycbcr_image[i][j].cb - 128;
+            double cr = (double)ycbcr_image[i][j].cr - 128;
+
+            double r = y + 1.402*cr;
+            double g = y - 0.344136*cb - 0.714136*cr;
+            double b = y + 1.772*cb;
+
+            rgb_image[i][j].r = (unsigned char)(r < 0 ? 0 : (r > 255 ? 255 : r));
+            rgb_image[i][j].g = (unsigned char)(g < 0 ? 0 : (g > 255 ? 255 : g));
+            rgb_image[i][j].b = (unsigned char)(b < 0 ? 0 : (b > 255 ? 255 : b));
+        }
+    }
+}
