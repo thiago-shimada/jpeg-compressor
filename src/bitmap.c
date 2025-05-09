@@ -3,6 +3,17 @@
 #include "bitmap.h"
 #include "platform.h"
 
+/**
+ * @brief Loads and processes the BMP file headers
+ *
+ * This function reads both file header and info header from the BMP file.
+ * If the file uses compression, it prints a warning and closes the file.
+ * Otherwise, it displays the header information.
+ *
+ * @param fp File pointer to an opened BMP file
+ * @param file_header Pointer to store the bitmap file header data
+ * @param info_header Pointer to store the bitmap info header data
+ */
 void load_bmp_header(FILE *fp, BITMAPFILEHEADER *file_header, BITMAPINFOHEADER *info_header) {
     read_bmp_header(fp, file_header);
     read_bmp_info(fp, info_header);
@@ -15,6 +26,15 @@ void load_bmp_header(FILE *fp, BITMAPFILEHEADER *file_header, BITMAPINFOHEADER *
     print_bmp_headers(file_header, info_header);
 }
 
+/**
+ * @brief Reads the bitmap file header from a file
+ *
+ * This function reads the BITMAPFILEHEADER structure from the provided file pointer.
+ * It exits the program if there's an error reading the header.
+ *
+ * @param fp File pointer positioned at the start of the bitmap file header
+ * @param file_header Pointer to store the bitmap file header data
+ */
 void read_bmp_header(FILE *fp, BITMAPFILEHEADER *file_header) {
     if (fread(&file_header->Type, sizeof(file_header->Type), 1, fp) != 1 ||
         fread(&file_header->Size, sizeof(file_header->Size), 1, fp) != 1 ||
@@ -26,6 +46,15 @@ void read_bmp_header(FILE *fp, BITMAPFILEHEADER *file_header) {
     }
 }
 
+/**
+ * @brief Reads the bitmap info header from a file
+ *
+ * This function reads the BITMAPINFOHEADER structure from the provided file pointer.
+ * It exits the program if there's an error reading the info header.
+ *
+ * @param fp File pointer positioned at the start of the bitmap info header
+ * @param info_header Pointer to store the bitmap info header data
+ */
 void read_bmp_info(FILE *fp, BITMAPINFOHEADER *info_header) {
     if (fread(&info_header->Size, sizeof(info_header->Size), 1, fp) != 1 ||
         fread(&info_header->Width, sizeof(info_header->Width), 1, fp) != 1 ||
@@ -43,6 +72,16 @@ void read_bmp_info(FILE *fp, BITMAPINFOHEADER *info_header) {
     }
 }
 
+/**
+ * @brief Prints the contents of bitmap headers
+ *
+ * This function displays all fields from both the bitmap file header
+ * and the bitmap info header in a formatted way. After displaying the
+ * information, it pauses execution using the system's PAUSE command.
+ *
+ * @param file_header Pointer to the bitmap file header to be displayed
+ * @param info_header Pointer to the bitmap info header to be displayed
+ */
 void print_bmp_headers(BITMAPFILEHEADER *file_header, BITMAPINFOHEADER *info_header) {
     printf("Bitmap File Header:\n");
     printf("  Type: %u\n", file_header->Type);

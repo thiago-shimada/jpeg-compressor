@@ -2,6 +2,16 @@
 #include <stdio.h>
 #include "heap_manager.h"
 
+/**
+ * @brief Initializes a 2D array of integers
+ *
+ * This function allocates memory for a 2D array of integers with the specified
+ * number of rows and columns. Each row is dynamically allocated.
+ *
+ * @param rows Number of rows in the matrix
+ * @param cols Number of columns in the matrix
+ * @return Pointer to the allocated 2D integer array
+ */
 int **init_int_matrix(int rows, int cols){
     int **matrix = (int **)malloc(rows * sizeof(int *));
     if (matrix == NULL) {
@@ -23,6 +33,14 @@ int **init_int_matrix(int rows, int cols){
     return matrix;
 }
 
+/**
+ * @brief Frees the memory allocated for a 2D integer array
+ *
+ * This function frees the memory previously allocated and sets the pointer to NULL.
+ *
+ * @param matrix Pointer to the 2D integer array to be freed
+ * @param rows Number of rows in the matrix
+ */
 void free_int_matrix(int **matrix, int rows){
     for (int i = 0; i < rows; i++) {
         free(matrix[i]);
@@ -31,6 +49,16 @@ void free_int_matrix(int **matrix, int rows){
     matrix = NULL;
 }
 
+/**
+ * @brief Initializes a 2D array of double values
+ *
+ * This function allocates memory for a 2D array of double values with the specified
+ * number of rows and columns. Each row is dynamically allocated.
+ *
+ * @param rows Number of rows in the matrix
+ * @param cols Number of columns in the matrix
+ * @return Pointer to the allocated 2D double array
+ */
 double **init_double_matrix(int rows, int cols) {
     double **matrix = (double **)malloc(rows * sizeof(double *));
     if (matrix == NULL) {
@@ -52,6 +80,14 @@ double **init_double_matrix(int rows, int cols) {
     return matrix;
 }
 
+/**
+ * @brief Frees the memory allocated for a 2D double array
+ *
+ * This function frees the memory previously allocated and sets the pointer to NULL.
+ *
+ * @param matrix Pointer to the 2D double array to be freed
+ * @param rows Number of rows in the matrix
+ */
 void free_double_matrix(double **matrix, int rows) {
     for (int i = 0; i < rows; i++) {
         free(matrix[i]);
@@ -60,6 +96,16 @@ void free_double_matrix(double **matrix, int rows) {
     matrix = NULL;
 }
 
+/**
+ * @brief Initializes a 2D array of unsigned char values
+ *
+ * This function allocates memory for a 2D array of unsigned char values with the specified
+ * number of rows and columns. Each row is dynamically allocated.
+ *
+ * @param rows Number of rows in the matrix
+ * @param cols Number of columns in the matrix
+ * @return Pointer to the allocated 2D unsigned char array
+ */
 unsigned char **init_uchar_matrix(int rows, int cols) {
     unsigned char **matrix = (unsigned char **)malloc(rows * sizeof(unsigned char *));
     if (matrix == NULL) {
@@ -81,6 +127,14 @@ unsigned char **init_uchar_matrix(int rows, int cols) {
     return matrix;
 }
 
+/**
+ * @brief Frees the memory allocated for a 2D unsigned char array
+ *
+ * This function frees the memory previously allocated and sets the pointer to NULL.
+ *
+ * @param matrix Pointer to the 2D unsigned char array to be freed
+ * @param rows Number of rows in the matrix
+ */
 void free_uchar_matrix(unsigned char **matrix, int rows) {
     for (int i = 0; i < rows; i++) {
         free(matrix[i]);

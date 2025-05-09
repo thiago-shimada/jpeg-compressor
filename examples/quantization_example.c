@@ -32,25 +32,39 @@ int main() {
         }
     }
 
+    // Step 1: Level Shift - Subtract 128 from each pixel value to center around zero
     double **shifted_block = level_shift(test);
     printf("Shifted Block:\n");
     print_double_matrix(shifted_block, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+    
+    // Step 2: Forward DCT - Transform the block from spatial domain to frequency domain
     double **dct_result = dct_2d(shifted_block, cosine_matrix);
     printf("DCT Result:\n");
     print_double_matrix(dct_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+    
+    // Step 3: Quantization - Divide DCT coefficients by quantization values to reduce precision
+    // The 1.0 parameter is the quality factor, LUMINANCE specifies the quantization table type
     double **quantized_result = quantize_block(dct_result, 1.0, LUMINANCE);
     printf("Quantized Result:\n");
     print_double_matrix(quantized_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+    
+    // Step 4: Dequantization - Multiply quantized values by quantization table
+    // This simulates the decompression process
     double **dequantized_result = dequantize_block(quantized_result, 1.0, LUMINANCE);
     printf("Dequantized Result:\n");
     print_double_matrix(dequantized_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+    
+    // Step 5: Inverse DCT - Transform back from frequency domain to spatial domain
     double **idct_result = idct_2d(dequantized_result, cosine_matrix);
     printf("IDCT Result:\n");
     print_double_matrix(idct_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+    
+    // Step 6: Unlevel Shift - Add 128 back to restore original pixel value range (0-255)
     unsigned char **unshifted_result = unlevel_shift(idct_result);
     printf("Unshifted Result:\n");
     print_uchar_matrix(unshifted_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
-    // Free allocated memory
+    
+    // Free all allocated memory to prevent memory leaks
     free_double_matrix(shifted_block, DCT_BLOCK_SIZE);
     free_double_matrix(dct_result, DCT_BLOCK_SIZE);
     free_double_matrix(quantized_result, DCT_BLOCK_SIZE);

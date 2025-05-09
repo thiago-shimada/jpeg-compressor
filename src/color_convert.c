@@ -3,6 +3,16 @@
 #include "bitmap.h"
 #include "color_convert.h"
 
+/**
+ * @brief Initializes a 2D array for storing RGB pixel data
+ *
+ * This function allocates memory for a 2D array of RGB_Pixel structures
+ * with the specified width and height.
+ *
+ * @param width Width of the image in pixels
+ * @param height Height of the image in pixels
+ * @return Pointer to the allocated 2D array of RGB_Pixel structures
+ */
 RGB_Pixel **init_rgb_image(int width, int height) {
     RGB_Pixel **image = (RGB_Pixel **)malloc(height * sizeof(RGB_Pixel *));
     for (int i = 0; i < height; i++) {
@@ -11,6 +21,14 @@ RGB_Pixel **init_rgb_image(int width, int height) {
     return image;
 }
 
+/**
+ * @brief Frees the memory allocated for an RGB image
+ *
+ * This function frees the memory previously allocated by init_rgb_image.
+ *
+ * @param image Pointer to the 2D array of RGB_Pixel structures to be freed
+ * @param height Height of the image in pixels
+ */
 void free_rgb_image(RGB_Pixel **image, int height) {
     for (int i = 0; i < height; i++) {
         free(image[i]);
@@ -18,6 +36,17 @@ void free_rgb_image(RGB_Pixel **image, int height) {
     free(image);
 }
 
+/**
+ * @brief Reads RGB pixel data from a BMP file into a 2D array
+ *
+ * This function reads RGB pixel data from the given file pointer and stores it
+ * in the provided image array. It assumes the file pointer is positioned at the
+ * beginning of the file and skips the header.
+ *
+ * @param fp File pointer to an opened BMP file
+ * @param image Pointer to a pre-allocated 2D array for storing the pixel data
+ * @param info_header BMP info header containing image dimensions
+ */
 void read_rgb_image(FILE *fp, RGB_Pixel **image, BITMAPINFOHEADER info_header) {
     int height = info_header.Height;
     int width = info_header.Width;
@@ -33,6 +62,18 @@ void read_rgb_image(FILE *fp, RGB_Pixel **image, BITMAPINFOHEADER info_header) {
     }
 }
 
+/**
+ * @brief Saves an RGB image to a BMP file
+ *
+ * This function writes the RGB pixel data to a new BMP file, including the appropriate
+ * file and info headers. Returns 0 on success, -1 on failure.
+ *
+ * @param filename Path to the output file
+ * @param image Pointer to the 2D array of RGB_Pixel data to be saved
+ * @param file_header Pointer to the original BMP file header to be copied
+ * @param info_header Pointer to the original BMP info header to be copied
+ * @return 0 on success, -1 on failure
+ */
 int save_rgb_image(const char *filename, RGB_Pixel **image, BITMAPFILEHEADER *file_header, BITMAPINFOHEADER *info_header){
     FILE *fp = fopen(filename, "wb");
     if (fp == NULL) {
@@ -74,6 +115,16 @@ int save_rgb_image(const char *filename, RGB_Pixel **image, BITMAPFILEHEADER *fi
     return 0;
 }
 
+/**
+ * @brief Initializes a 2D array for storing YCbCr pixel data
+ *
+ * This function allocates memory for a 2D array of YCbCr_Pixel structures
+ * with the specified width and height.
+ *
+ * @param width Width of the image in pixels
+ * @param height Height of the image in pixels
+ * @return Pointer to the allocated 2D array of YCbCr_Pixel structures
+ */
 YCbCr_Pixel **init_ycbcr_image(int width, int height){
     YCbCr_Pixel **image = (YCbCr_Pixel **)malloc(height * sizeof(YCbCr_Pixel *));
     for (int i = 0; i < height; i++) {
@@ -83,6 +134,14 @@ YCbCr_Pixel **init_ycbcr_image(int width, int height){
     return image;
 }
 
+/**
+ * @brief Frees the memory allocated for a YCbCr image
+ *
+ * This function frees the memory previously allocated by init_ycbcr_image.
+ *
+ * @param image Pointer to the 2D array of YCbCr_Pixel structures to be freed
+ * @param height Height of the image in pixels
+ */
 void free_ycbcr_image(YCbCr_Pixel **image, int height) {
     for (int i = 0; i < height; i++) {
         free(image[i]);
@@ -90,8 +149,17 @@ void free_ycbcr_image(YCbCr_Pixel **image, int height) {
     free(image);
 }
 
-/*
- * Receives a YCbCr matrix and a RGB matrix of same size. Converts RGB populated matrix into YCbCr
+/**
+ * @brief Converts an RGB image to YCbCr color space
+ *
+ * This function converts RGB pixel values to YCbCr using standard
+ * conversion formulas. The Y component represents luminance, while Cb and Cr
+ * represent blue-difference and red-difference chroma components.
+ *
+ * @param rgb_image Source RGB image data
+ * @param ycbcr_image Pre-allocated destination for YCbCr image data
+ * @param width Width of the image in pixels
+ * @param height Height of the image in pixels
  */
 void rgb_to_ycbcr(RGB_Pixel **rgb_image, YCbCr_Pixel **ycbcr_image, int width, int height) {
     for(int i = 0; i < height; i++) {
@@ -111,7 +179,18 @@ void rgb_to_ycbcr(RGB_Pixel **rgb_image, YCbCr_Pixel **ycbcr_image, int width, i
     }
 }
 
- void ycbcr_to_rgb(YCbCr_Pixel **ycbcr_image, RGB_Pixel **rgb_image, int width, int height) {
+/**
+ * @brief Converts a YCbCr image back to RGB color space
+ *
+ * This function converts YCbCr pixel values to RGB using standard
+ * conversion formulas, reversing the process performed by rgb_to_ycbcr.
+ *
+ * @param ycbcr_image Source YCbCr image data
+ * @param rgb_image Pre-allocated destination for RGB image data
+ * @param width Width of the image in pixels
+ * @param height Height of the image in pixels
+ */
+void ycbcr_to_rgb(YCbCr_Pixel **ycbcr_image, RGB_Pixel **rgb_image, int width, int height) {
     for(int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
             double y = (double)ycbcr_image[i][j].y;
@@ -129,6 +208,19 @@ void rgb_to_ycbcr(RGB_Pixel **rgb_image, YCbCr_Pixel **ycbcr_image, int width, i
     }
 }
 
+/**
+ * @brief Performs 4:2:0 chroma subsampling on a YCbCr image
+ *
+ * This function creates a new YCbCr image where the chroma components (Cb and Cr)
+ * are subsampled by averaging each 2x2 block of pixels. The luminance component (Y)
+ * is preserved for all pixels. This is a common compression technique in image and 
+ * video processing.
+ *
+ * @param ycbcr_image Source YCbCr image data
+ * @param width Width of the image in pixels
+ * @param height Height of the image in pixels
+ * @return Pointer to a new YCbCr image with subsampled chroma components
+ */
 YCbCr_Pixel **ycbcr_subsampling_420(YCbCr_Pixel **ycbcr_image, int width, int height) {
     YCbCr_Pixel **subsampled_image = init_ycbcr_image(width, height);
 
