@@ -52,7 +52,6 @@ double **idct_2d(double **block,
     double** result = init_double_matrix(DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
     
     double temp[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE];
-    double temp_res[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE];
     
     for (int i = 0; i < DCT_BLOCK_SIZE; i++) {
         for (int j = 0; j < DCT_BLOCK_SIZE; j++) {
