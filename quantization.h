@@ -14,7 +14,7 @@ extern int luminance_quantization_table[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE];
 
 extern int chrominance_quantization_table[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE];
 
-int **quantize_block(double **block, double factor, QuantizationType type);
-double **dequantize_block(int **block, double factor, QuantizationType type);
+double **quantize_block(double **block, double factor, QuantizationType type);
+double **dequantize_block(double **block, double factor, QuantizationType type);
 
 #endif

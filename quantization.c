@@ -26,8 +26,8 @@ int chrominance_quantization_table[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE] = {
     {99, 99, 99, 99, 99, 99, 99, 99}
 };
 
-int **quantize_block(double **block, double factor, QuantizationType type) {
-    int **quantized_block = init_int_matrix(DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+double **quantize_block(double **block, double factor, QuantizationType type) {
+    double **quantized_block = init_double_matrix(DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
 
     if(type == LUMINANCE) {
         for(int i = 0; i < DCT_BLOCK_SIZE; i++) {
@@ -46,7 +46,7 @@ int **quantize_block(double **block, double factor, QuantizationType type) {
     return quantized_block;
 }
 
-double **dequantize_block(int **block, double factor, QuantizationType type) {
+double **dequantize_block(double **block, double factor, QuantizationType type) {
     double **dequantized_block = init_double_matrix(DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
 
     if(type == LUMINANCE) {

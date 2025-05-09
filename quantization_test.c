@@ -38,9 +38,9 @@
 //     double **dct_result = dct_2d(shifted_block, cosine_matrix);
 //     printf("DCT Result:\n");
 //     print_double_matrix(dct_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
-//     int **quantized_result = quantize_block(dct_result, 1.0, LUMINANCE);
+//     double **quantized_result = quantize_block(dct_result, 1.0, LUMINANCE);
 //     printf("Quantized Result:\n");
-//     print_int_matrix(quantized_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+//     print_double_matrix(quantized_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
 //     double **dequantized_result = dequantize_block(quantized_result, 1.0, LUMINANCE);
 //     printf("Dequantized Result:\n");
 //     print_double_matrix(dequantized_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
@@ -53,7 +53,7 @@
 //     // Free allocated memory
 //     free_double_matrix(shifted_block, DCT_BLOCK_SIZE);
 //     free_double_matrix(dct_result, DCT_BLOCK_SIZE);
-//     free_int_matrix(quantized_result, DCT_BLOCK_SIZE);
+//     free_double_matrix(quantized_result, DCT_BLOCK_SIZE);
 //     free_double_matrix(dequantized_result, DCT_BLOCK_SIZE);
 //     free_double_matrix(idct_result, DCT_BLOCK_SIZE);
 //     free_uchar_matrix(unshifted_result, DCT_BLOCK_SIZE);
