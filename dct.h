@@ -7,6 +7,9 @@
 #endif
 
 void compute_cosine_matrix();
-double **dct_2d(unsigned char **block, double cosine_matrix[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE]);
-unsigned char **idct_2d(double **block, double cosine_matrix[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE]);
+double **dct_2d(double **block, double cosine_matrix[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE]);
+double **idct_2d(double **block, double cosine_matrix[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE]);
+double **level_shift(unsigned char **block);
+unsigned char **unlevel_shift(double **block);
+
 #endif
