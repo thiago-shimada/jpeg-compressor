@@ -47,19 +47,30 @@ int main() {
     double **quantized_result = quantize_block(dct_result, 1.0, LUMINANCE);
     printf("Quantized Result:\n");
     print_double_matrix(quantized_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+
+    // Step 4: Zigzag Scan - Reorder the quantized coefficients in a zigzag pattern
+    double *zigzag_array = zigzag_scan(quantized_result);
+    printf("Zigzag Scanned Result:\n");
+    print_double_array(zigzag_array, DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
+
+    // Step 5: Inverse Zigzag Scan - Reorder the zigzag array back to 2D block
+    double **inverse_zigzag_result = inverse_zigzag_scan(zigzag_array);
+    printf("Inverse Zigzag Scanned Result:\n");
+    print_double_matrix(inverse_zigzag_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+    free_double_matrix(inverse_zigzag_result, DCT_BLOCK_SIZE);
     
-    // Step 4: Dequantization - Multiply quantized values by quantization table
+    // Step 6: Dequantization - Multiply quantized values by quantization table
     // This simulates the decompression process
     double **dequantized_result = dequantize_block(quantized_result, 1.0, LUMINANCE);
     printf("Dequantized Result:\n");
     print_double_matrix(dequantized_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
     
-    // Step 5: Inverse DCT - Transform back from frequency domain to spatial domain
+    // Step 7: Inverse DCT - Transform back from frequency domain to spatial domain
     double **idct_result = idct_2d(dequantized_result, cosine_matrix);
     printf("IDCT Result:\n");
     print_double_matrix(idct_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
     
-    // Step 6: Unlevel Shift - Add 128 back to restore original pixel value range (0-255)
+    // Step 8: Unlevel Shift - Add 128 back to restore original pixel value range (0-255)
     unsigned char **unshifted_result = unlevel_shift(idct_result);
     printf("Unshifted Result:\n");
     print_uchar_matrix(unshifted_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);

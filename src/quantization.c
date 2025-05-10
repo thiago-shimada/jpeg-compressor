@@ -42,6 +42,25 @@ int chrominance_quantization_table[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE] = {
 };
 
 /**
+ * @brief Zigzag lookup table for scanning DCT coefficients
+ *
+ * This table is used to reorder the DCT coefficients in a zigzag pattern,
+ * which is useful for encoding the coefficients in a more efficient manner.
+ * The zigzag pattern helps to group low-frequency coefficients together,
+ * which are typically more significant.
+ */
+int zigzag_table[DCT_BLOCK_SIZE * DCT_BLOCK_SIZE][2] = {
+    {0, 0}, {0, 1}, {1, 0}, {2, 0}, {1, 1}, {0, 2}, {0, 3}, {1, 2},
+    {2, 1}, {3, 0}, {4, 0}, {3, 1}, {2, 2}, {1, 3}, {0, 4}, {0, 5},
+    {1, 4}, {2, 3}, {3, 2}, {4, 1}, {5, 0}, {6, 0}, {5, 1}, {4, 2},
+    {3, 3}, {2, 4}, {1, 5}, {0, 6}, {0, 7}, {1, 6}, {2, 5}, {3, 4},
+    {4, 3}, {5, 2}, {6, 1}, {7, 0}, {7, 1}, {6, 2}, {5, 3}, {4, 4},
+    {3, 5}, {2, 6}, {1, 7}, {2, 7}, {3, 6}, {4, 5}, {5, 4}, {6, 3},
+    {7, 2}, {7, 3}, {6, 4}, {5, 5}, {4, 6}, {3, 7}, {4, 7}, {5, 6},
+    {6, 5}, {7, 4}, {7, 5}, {6, 6}, {5, 7}, {6, 7}, {7, 6}, {7, 7}
+};
+
+/**
  * @brief Quantizes DCT coefficients using standard JPEG quantization tables
  *
  * This function divides each DCT coefficient by the corresponding value from the
@@ -103,4 +122,51 @@ double **dequantize_block(double **block, double factor, QuantizationType type) 
     }
 
     return dequantized_block;
+}
+
+/**
+ * @brief Zigzag scan of a block of DCT coefficients
+ *
+ * This function rearranges the DCT coefficients in a zigzag order, which is useful
+ * for encoding the coefficients more efficiently. The zigzag pattern helps to group
+ * low-frequency coefficients together.
+ *
+ * @param block Input 8x8 block of DCT coefficients
+ * @param zigzag_array Output array to store the zigzag-scanned coefficients
+ */
+double *zigzag_scan(double **block) {
+    double *zigzag_array = init_double_array(DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
+
+    for (int i = 0; i < DCT_BLOCK_SIZE * DCT_BLOCK_SIZE; i++) {
+        int row = zigzag_table[i][0];
+        int col = zigzag_table[i][1];
+        zigzag_array[i] = block[row][col];
+    }
+
+    return zigzag_array;
+}
+
+/**
+ * @brief Inverse zigzag scan of a zigzag-ordered array
+ *
+ * This function rearranges the coefficients from a zigzag order back to their
+ * original 8x8 block format. This is useful during the decompression process.
+ * Also frees the zigzag_array after use.
+ *
+ * @param zigzag_array Input array of zigzag-scanned coefficients
+ * @param block Output 8x8 block to store the rearranged coefficients
+ */
+ double **inverse_zigzag_scan(double *zigzag_array) {
+    double **block = init_double_matrix(DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+
+    for (int i = 0; i < DCT_BLOCK_SIZE * DCT_BLOCK_SIZE; i++) {
+        int row = zigzag_table[i][0];
+        int col = zigzag_table[i][1];
+        block[row][col] = zigzag_array[i];
+    }
+
+    free(zigzag_array);
+    zigzag_array = NULL;
+
+    return block;
 }

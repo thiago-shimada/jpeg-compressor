@@ -142,3 +142,21 @@ void free_uchar_matrix(unsigned char **matrix, int rows) {
     free(matrix);
     matrix = NULL;
 }
+
+/**
+ * @brief Initializes a 1D array of double values
+ *
+ * This function allocates memory for a 1D array of double values with the specified
+ * size.
+ *
+ * @param size Size of the array
+ * @return Pointer to the allocated 1D double array
+ */
+double *init_double_array(int size) {
+    double *array = (double *)malloc(size * sizeof(double));
+    if (array == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    return array;
+}
