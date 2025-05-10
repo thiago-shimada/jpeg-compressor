@@ -160,3 +160,51 @@ double *init_double_array(int size) {
     }
     return array;
 }
+
+/**
+ * @brief Frees the memory allocated for a matrix of double matrices
+ * 
+ * This function frees the memory previously allocated for a matrix of double matrices.
+ * It does not allocate memory for each double matrix inside the matrix.
+ * 
+ * @param rows Number of rows in the matrix
+ * @param cols Number of columns in the matrix
+ */
+double ****init_matrix_of_double_matrices(int rows, int cols) {
+    double ****matrix = (double ****)malloc(rows * sizeof(double ***));
+    if (matrix == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < rows; i++) {
+        matrix[i] = (double ***)malloc(cols * sizeof(double **));
+        if (matrix[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            for (int j = 0; j < i; j++) {
+                free(matrix[j]);
+            }
+            free(matrix);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    return matrix;
+}
+
+/**
+ * @brief Frees the memory allocated for a matrix of double matrices
+ *
+ * This function frees the memory previously allocated for a matrix of double matrices.
+ * It does not free the individual double matrices inside the matrix.
+ *
+ * @param matrix Pointer to the matrix of double matrices to be freed
+ * @param rows Number of rows in the matrix
+ * @param cols Number of columns in the matrix
+ */
+void free_matrix_of_double_matrices(double ****matrix, int rows) {
+    for (int i = 0; i < rows; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
+    matrix = NULL;
+}

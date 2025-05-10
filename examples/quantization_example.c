@@ -11,10 +11,10 @@ int main() {
     compute_cosine_matrix(cosine_matrix);
     // Print the cosine matrix for verification
     // First, allocate the memory as you did
-    unsigned char **test = init_uchar_matrix(DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+    double **test = init_double_matrix(DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
 
     // Now initialize the matrix with the given values
-    unsigned char values[8][8] = {
+    double values[8][8] = {
         {52, 55, 61, 66, 70, 61, 64, 73},
         {63, 59, 66, 90, 109, 85, 69, 72},
         {62, 59, 68, 113, 144, 104, 66, 73},
@@ -71,9 +71,9 @@ int main() {
     print_double_matrix(idct_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
     
     // Step 8: Unlevel Shift - Add 128 back to restore original pixel value range (0-255)
-    unsigned char **unshifted_result = unlevel_shift(idct_result);
+    double **unshifted_result = unlevel_shift(idct_result);
     printf("Unshifted Result:\n");
-    print_uchar_matrix(unshifted_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+    print_double_matrix(unshifted_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
     
     // Free all allocated memory to prevent memory leaks
     free_double_matrix(shifted_block, DCT_BLOCK_SIZE);
@@ -81,8 +81,8 @@ int main() {
     free_double_matrix(quantized_result, DCT_BLOCK_SIZE);
     free_double_matrix(dequantized_result, DCT_BLOCK_SIZE);
     free_double_matrix(idct_result, DCT_BLOCK_SIZE);
-    free_uchar_matrix(unshifted_result, DCT_BLOCK_SIZE);
-    free_uchar_matrix(test, DCT_BLOCK_SIZE);
+    free_double_matrix(unshifted_result, DCT_BLOCK_SIZE);
+    free_double_matrix(test, DCT_BLOCK_SIZE);
 
     return 0;
 }
