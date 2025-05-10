@@ -19,27 +19,43 @@ int main(int argc, char *argv[]) {
 
     load_bmp_header(fp, &file_header, &info_header);
 
-    RGB_Pixel **image = init_rgb_image(info_header.Width, info_header.Height);
-    read_rgb_image(fp, image, info_header);
+    // Create RGB image structure
+    RGB_Image rgb_image = init_rgb_image();
+    
+    // Read the RGB image data from the BMP file
+    read_rgb_image(&rgb_image, fp, file_header, info_header);
     fclose(fp);
 
-    // Process the image here (e.g., convert to grayscale)
-    // ...
-    YCbCr_Pixel **image2 = init_ycbcr_image(info_header.Width, info_header.Height);
-    rgb_to_ycbcr(image, image2, info_header.Width, info_header.Height);
+    // Create YCbCr image structure
+    YCbCr_Image ycbcr_image = init_ycbcr_image();
     
-    free_rgb_image(image, info_header.Height);
+    // Convert RGB to YCbCr
+    rgb_to_ycbcr(&ycbcr_image, rgb_image);
+    
+    // We can free the original RGB image now
+    free_rgb_image(&rgb_image);
 
-    YCbCr_Pixel **subsampled_image = ycbcr_subsampling_420(image2, info_header.Width, info_header.Height);
+    // Create YCbCr_420 structure
+    YCbCr_Image_420 subsampled_image = init_ycbcr_image_420();
+    
+    // Apply chroma subsampling (4:2:0)
+    ycbcr_subsampling_420(&subsampled_image, ycbcr_image);
 
-    image = init_rgb_image(info_header.Width, info_header.Height);
-    ycbcr_to_rgb(subsampled_image, image, info_header.Width, info_header.Height);
+    // Free the original YCbCr image
+    free_ycbcr_image(&ycbcr_image);
 
-    save_rgb_image(argv[2], image, &file_header, &info_header);
+    ycbcr_upsampling_420(&ycbcr_image, subsampled_image);
+    ycbcr_to_rgb(&rgb_image, ycbcr_image);
 
-    free_rgb_image(image, info_header.Height);
-    free_ycbcr_image(image2, info_header.Height);
-    free_ycbcr_image(subsampled_image, info_header.Height);
+    // Free the ycbcr images
+    free_ycbcr_image_420(&subsampled_image);
+    free_ycbcr_image(&ycbcr_image);
+    
+    // Save the RGB image
+    save_rgb_image(argv[2], rgb_image, &file_header, &info_header);
+    
+    // Free the RGB image
+    free_rgb_image(&rgb_image);
 
     return 0;
 }
