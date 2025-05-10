@@ -7,8 +7,13 @@
 #include "color_convert.h"
 #include "bitmap.h"
 #include "print.h"
+#include "time.h"
 
 int main(int argc, char *argv[]) {
+    clock_t start, end;
+    double cpu_time_used;
+
+    start = clock();
     double cosine_matrix[DCT_BLOCK_SIZE][DCT_BLOCK_SIZE];
     compute_cosine_matrix(cosine_matrix);
 
@@ -159,5 +164,11 @@ int main(int argc, char *argv[]) {
     // Free the RGB image
     free_rgb_image(&rgb_image);
 
+    end = clock(); // Record end time
+
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC; // Calculate execution time
+
+    printf("Time taken: %f seconds\n", cpu_time_used);
+    
     return 0;
 }
