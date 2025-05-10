@@ -97,7 +97,7 @@ double **idct_2d(double **block,
         for (int j = 0; j < DCT_BLOCK_SIZE; j++) {
             result[i][j] = 0.0;
             for (int k = 0; k < DCT_BLOCK_SIZE; k++) {
-                result[i][j] += temp[i][k] * cosine_matrix[k][j];
+                result[i][j] =  round(result[i][j] + (temp[i][k] * cosine_matrix[k][j]));
             }
         }
     }
@@ -289,7 +289,8 @@ YCbCr_Image_420 merge_blocks_into_ycbcr_420(DCTBlocks blocks) {
         for (int j = 0; j < blocks.luminance_width; j++) {
             for (int k = 0; k < DCT_BLOCK_SIZE; k++) {
                 for (int l = 0; l < DCT_BLOCK_SIZE; l++) {
-                    ycbcr_image.y[i * DCT_BLOCK_SIZE + k][j * DCT_BLOCK_SIZE + l] = (unsigned char)blocks.y_blocks[i][j][k][l];
+                    double temp_y = round(blocks.y_blocks[i][j][k][l]);
+                    ycbcr_image.y[i * DCT_BLOCK_SIZE + k][j * DCT_BLOCK_SIZE + l] = (unsigned char)(temp_y < 0 ? 0 : (temp_y > 255 ? 255 : temp_y));
                 }
             }
         }
@@ -299,8 +300,10 @@ YCbCr_Image_420 merge_blocks_into_ycbcr_420(DCTBlocks blocks) {
         for (int j = 0; j < blocks.chrominance_width; j++) {
             for (int k = 0; k < DCT_BLOCK_SIZE; k++) {
                 for (int l = 0; l < DCT_BLOCK_SIZE; l++) {
-                    ycbcr_image.cb[i * DCT_BLOCK_SIZE + k][j * DCT_BLOCK_SIZE + l] = (unsigned char)blocks.cb_blocks[i][j][k][l];
-                    ycbcr_image.cr[i * DCT_BLOCK_SIZE + k][j * DCT_BLOCK_SIZE + l] = (unsigned char)blocks.cr_blocks[i][j][k][l];
+                    double temp_cb = round(blocks.cb_blocks[i][j][k][l]);
+                    double temp_cr = round(blocks.cr_blocks[i][j][k][l]);
+                    ycbcr_image.cb[i * DCT_BLOCK_SIZE + k][j * DCT_BLOCK_SIZE + l] = (unsigned char)(temp_cb < 0 ? 0 : (temp_cb > 255 ? 255 : temp_cb));;
+                    ycbcr_image.cr[i * DCT_BLOCK_SIZE + k][j * DCT_BLOCK_SIZE + l] = (unsigned char)(temp_cr < 0 ? 0 : (temp_cr > 255 ? 255 : temp_cr));;
                 }
             }
         }
