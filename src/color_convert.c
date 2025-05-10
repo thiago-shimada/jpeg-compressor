@@ -316,22 +316,22 @@ void ycbcr_subsampling_420(YCbCr_Image_420 *ycbcr_image_420, YCbCr_Image ycbcr_i
         }
     }
 
-    for (int i = luminance_height / 2; i < chrominance_height; i++) {
-        for (int j = 0; j < luminance_width; j++) {
+    for (int i = luminance_height/2; i < chrominance_height; i++) {
+        for (int j = 0; j < luminance_width/2; j++) {
             ycbcr_image_420->cb[i][j] = ycbcr_image.cb[luminance_height-1][j];
             ycbcr_image_420->cr[i][j] = ycbcr_image.cr[luminance_height-1][j];
         }
     }
 
-    for (int i = 0; i < chrominance_height; i++) {
-        for (int j = luminance_width / 2; j < chrominance_width; j++) {
+    for (int i = 0; i < luminance_height; i++) {
+        for (int j = luminance_width/2; j < chrominance_width; j++) {
             ycbcr_image_420->cb[i][j] = ycbcr_image.cb[i][luminance_width-1];
             ycbcr_image_420->cr[i][j] = ycbcr_image.cr[i][luminance_width-1];
         }
     }
 
-    for (int i = luminance_height / 2; i < chrominance_height; i++) {
-        for (int j = luminance_width / 2; j < chrominance_width; j++) {
+    for (int i = luminance_height/2; i < chrominance_height; i++) {
+        for (int j = luminance_width/2; j < chrominance_width; j++) {
             ycbcr_image_420->cb[i][j] = ycbcr_image.cb[luminance_height-1][luminance_width-1];
             ycbcr_image_420->cr[i][j] = ycbcr_image.cr[luminance_height-1][luminance_width-1];
         }
