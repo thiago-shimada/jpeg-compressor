@@ -302,8 +302,8 @@ YCbCr_Image_420 merge_blocks_into_ycbcr_420(DCTBlocks blocks) {
                 for (int l = 0; l < DCT_BLOCK_SIZE; l++) {
                     double temp_cb = round(blocks.cb_blocks[i][j][k][l]);
                     double temp_cr = round(blocks.cr_blocks[i][j][k][l]);
-                    ycbcr_image.cb[i * DCT_BLOCK_SIZE + k][j * DCT_BLOCK_SIZE + l] = (unsigned char)(temp_cb < 0 ? 0 : (temp_cb > 255 ? 255 : temp_cb));;
-                    ycbcr_image.cr[i * DCT_BLOCK_SIZE + k][j * DCT_BLOCK_SIZE + l] = (unsigned char)(temp_cr < 0 ? 0 : (temp_cr > 255 ? 255 : temp_cr));;
+                    ycbcr_image.cb[i * DCT_BLOCK_SIZE + k][j * DCT_BLOCK_SIZE + l] = (unsigned char)(temp_cb < 0 ? 0 : (temp_cb > 255 ? 255 : temp_cb));
+                    ycbcr_image.cr[i * DCT_BLOCK_SIZE + k][j * DCT_BLOCK_SIZE + l] = (unsigned char)(temp_cr < 0 ? 0 : (temp_cr > 255 ? 255 : temp_cr));
                 }
             }
         }
