@@ -101,6 +101,20 @@ int main(int argc, char *argv[]) {
     // Free blocks
     free_dct_blocks(&blocks);
     blocks = init_dct_blocks(quantized_blocks.luminance_height, quantized_blocks.luminance_width, quantized_blocks.chrominance_height, quantized_blocks.chrominance_width);
+    
+    // Convert quantized_blocks to zigzag arrays
+    ZigzagMatrix zigzag_matrix = blocks_to_arrays(quantized_blocks);
+
+    print_int_array(zigzag_matrix.y_zigzag[0][0], DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
+    // Free the quantized blocks
+    free_dct_blocks(&quantized_blocks);
+    // Convert zigzag arrays back to DCT blocks
+    quantized_blocks = arrays_to_blocks(zigzag_matrix);
+
+    print_double_matrix(quantized_blocks.y_blocks[0][0], DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
+    // Free the zigzag matrix
+    free_zigzag_matrix(&zigzag_matrix);
+    
     // Dequantize quantized_blocks to blocks
     for (int i = 0; i < quantized_blocks.luminance_height; i++) {
         for (int j = 0; j < quantized_blocks.luminance_width; j++) {

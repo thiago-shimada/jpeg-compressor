@@ -7,8 +7,10 @@ double **init_double_matrix(int rows, int cols);
 void free_double_matrix(double **matrix, int rows);
 unsigned char **init_uchar_matrix(int rows, int cols);
 void free_uchar_matrix(unsigned char **matrix, int rows);
-double *init_double_array(int size);
+int *init_int_array(int size);
 double ****init_matrix_of_double_matrices(int rows, int cols);
 void free_matrix_of_double_matrices(double ****matrix, int rows);
+int ***init_matrix_of_int_arrays(int rows, int cols);
+void free_matrix_of_int_arrays(int ***matrix, int rows);
 
 #endif

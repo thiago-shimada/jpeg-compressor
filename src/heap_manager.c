@@ -144,16 +144,16 @@ void free_uchar_matrix(unsigned char **matrix, int rows) {
 }
 
 /**
- * @brief Initializes a 1D array of double values
+ * @brief Initializes a 1D array of int values
  *
- * This function allocates memory for a 1D array of double values with the specified
+ * This function allocates memory for a 1D array of int values with the specified
  * size.
  *
  * @param size Size of the array
- * @return Pointer to the allocated 1D double array
+ * @return Pointer to the allocated 1D int array
  */
-double *init_double_array(int size) {
-    double *array = (double *)malloc(size * sizeof(double));
+int *init_int_array(int size) {
+    int *array = (int *)malloc(size * sizeof(int));
     if (array == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
@@ -202,6 +202,54 @@ double ****init_matrix_of_double_matrices(int rows, int cols) {
  * @param cols Number of columns in the matrix
  */
 void free_matrix_of_double_matrices(double ****matrix, int rows) {
+    for (int i = 0; i < rows; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
+    matrix = NULL;
+}
+
+/**
+ * @brief Initializes a matrix of int arrays
+ *
+ * This function allocates memory for a matrix of int arrays with the specified
+ * number of rows and columns. Does not allocate memory for each int array inside the matrix.
+ *
+ * @param rows Number of rows in the matrix
+ * @param cols Number of columns in the matrix
+ * @return Pointer to the allocated 3D int array
+ */
+int ***init_matrix_of_int_arrays(int rows, int cols) {
+    int ***matrix = (int ***)malloc(rows * sizeof(int **));
+    if (matrix == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < rows; i++) {
+        matrix[i] = (int **)malloc(cols * sizeof(int *));
+        if (matrix[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            for (int j = 0; j < i; j++) {
+                free(matrix[j]);
+            }
+            free(matrix);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    return matrix;
+}
+
+/**
+ * @brief Frees the memory allocated for a matrix of int arrays
+ *
+ * This function frees the memory previously allocated for a matrix of int arrays.
+ * It does not free the individual int arrays inside the matrix.
+ *
+ * @param matrix Pointer to the matrix of int arrays to be freed
+ * @param rows Number of rows in the matrix
+ */
+void free_matrix_of_int_arrays(int ***matrix, int rows) {
     for (int i = 0; i < rows; i++) {
         free(matrix[i]);
     }

@@ -134,13 +134,13 @@ double **dequantize_block(double **block, double factor, QuantizationType type) 
  * @param block Input 8x8 block of DCT coefficients
  * @param zigzag_array Output array to store the zigzag-scanned coefficients
  */
-double *zigzag_scan(double **block) {
-    double *zigzag_array = init_double_array(DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
+int *zigzag_scan(double **block) {
+    int *zigzag_array = init_int_array(DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
 
     for (int i = 0; i < DCT_BLOCK_SIZE * DCT_BLOCK_SIZE; i++) {
         int row = zigzag_table[i][0];
         int col = zigzag_table[i][1];
-        zigzag_array[i] = block[row][col];
+        zigzag_array[i] = (int) round(block[row][col]);
     }
 
     return zigzag_array;
@@ -156,17 +156,134 @@ double *zigzag_scan(double **block) {
  * @param zigzag_array Input array of zigzag-scanned coefficients
  * @param block Output 8x8 block to store the rearranged coefficients
  */
- double **inverse_zigzag_scan(double *zigzag_array) {
+ double **inverse_zigzag_scan(int *zigzag_array) {
     double **block = init_double_matrix(DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
 
     for (int i = 0; i < DCT_BLOCK_SIZE * DCT_BLOCK_SIZE; i++) {
         int row = zigzag_table[i][0];
         int col = zigzag_table[i][1];
-        block[row][col] = zigzag_array[i];
+        block[row][col] = (double) zigzag_array[i];
     }
 
-    free(zigzag_array);
-    zigzag_array = NULL;
-
     return block;
+}
+
+/**
+ * @brief Initializes a ZigzagMatrix structure
+ *
+ * This function allocates memory for the ZigzagMatrix structure and initializes
+ * its dimensions and zigzag arrays for luminance and chrominance components.
+ *
+ * @param luminance_height Height of the luminance zigzag array
+ * @param luminance_width Width of the luminance zigzag array
+ * @param chrominance_height Height of the chrominance zigzag array
+ * @param chrominance_width Width of the chrominance zigzag array
+ * @return Pointer to the initialized ZigzagMatrix structure
+ * @note The caller is responsible for freeing the allocated memory.
+ */
+ZigzagMatrix init_zigzag_matrix(int luminance_height, int luminance_width,
+                            int chrominance_height, int chrominance_width) {
+    ZigzagMatrix zigzag_matrix;
+    zigzag_matrix.luminance_height = luminance_height;
+    zigzag_matrix.luminance_width = luminance_width;
+    zigzag_matrix.chrominance_height = chrominance_height;
+    zigzag_matrix.chrominance_width = chrominance_width;
+
+    zigzag_matrix.y_zigzag = init_matrix_of_int_arrays(luminance_height, luminance_width);
+    zigzag_matrix.cb_zigzag = init_matrix_of_int_arrays(chrominance_height, chrominance_width);
+    zigzag_matrix.cr_zigzag = init_matrix_of_int_arrays(chrominance_height, chrominance_width);
+
+    return zigzag_matrix;
+}
+
+/**
+ * @brief Frees memory allocated for a ZigzagMatrix structure
+ *
+ * This function frees the memory allocated for the zigzag matrix and its arrays in the
+ * ZigzagMatrix structure.
+ *
+ * @param zigzag_matrix Pointer to the ZigzagMatrix structure to free
+ */
+void free_zigzag_matrix(ZigzagMatrix *zigzag_matrix) {
+    for (int i = 0; i < zigzag_matrix->luminance_height; i++) {
+        for (int j = 0; j < zigzag_matrix->luminance_width; j++) {
+            free(zigzag_matrix->y_zigzag[i][j]);
+        }
+    }
+    free_matrix_of_int_arrays(zigzag_matrix->y_zigzag, zigzag_matrix->luminance_height);
+
+    for (int i = 0; i < zigzag_matrix->chrominance_height; i++) {
+        for (int j = 0; j < zigzag_matrix->chrominance_width; j++) {
+            free(zigzag_matrix->cb_zigzag[i][j]);
+            free(zigzag_matrix->cr_zigzag[i][j]);
+        }
+    }
+    free_matrix_of_int_arrays(zigzag_matrix->cb_zigzag, zigzag_matrix->chrominance_height);
+    free_matrix_of_int_arrays(zigzag_matrix->cr_zigzag, zigzag_matrix->chrominance_height);
+
+    zigzag_matrix->luminance_height = 0;
+    zigzag_matrix->luminance_width = 0;
+    zigzag_matrix->chrominance_height = 0;
+    zigzag_matrix->chrominance_width = 0;
+}
+
+/**
+ * @brief Converts DCT blocks to zigzag arrays
+ *
+ * This function takes DCT blocks and converts them into zigzag arrays for
+ * luminance and chrominance components. It uses the zigzag scan function to
+ * rearrange the coefficients.
+ *
+ * @param blocks DCTBlocks structure containing the 8x8 blocks for each channel
+ * @return ZigzagMatrix structure containing the zigzag arrays
+ */
+ZigzagMatrix blocks_to_arrays(DCTBlocks blocks) {
+    ZigzagMatrix zigzag_matrix = init_zigzag_matrix(blocks.luminance_height, blocks.luminance_width,
+                                                    blocks.chrominance_height, blocks.chrominance_width);
+
+    for (int i = 0; i < blocks.luminance_height; i++) {
+        for (int j = 0; j < blocks.luminance_width; j++) {
+            zigzag_matrix.y_zigzag[i][j] = zigzag_scan(blocks.y_blocks[i][j]);
+        }
+    }
+
+    for (int i = 0; i < blocks.chrominance_height; i++) {
+        for (int j = 0; j < blocks.chrominance_width; j++) {
+            zigzag_matrix.cb_zigzag[i][j] = zigzag_scan(blocks.cb_blocks[i][j]);
+            zigzag_matrix.cr_zigzag[i][j] = zigzag_scan(blocks.cr_blocks[i][j]);
+        }
+    }
+
+    return zigzag_matrix;
+}
+
+/**
+ * @brief Converts zigzag arrays back to DCT blocks
+ *
+ * This function takes zigzag arrays and converts them back into DCT blocks for
+ * luminance and chrominance components. It uses the inverse zigzag scan function
+ * to rearrange the coefficients.
+ *
+ * @param zigzag_matrix ZigzagMatrix structure containing the zigzag arrays
+ * @return DCTBlocks structure containing the 8x8 blocks for each channel
+ * @note The caller is responsible for freeing the allocated memory in the zigzag_matrix.
+ */
+DCTBlocks arrays_to_blocks(ZigzagMatrix zigzag_matrix) {
+    DCTBlocks blocks = init_dct_blocks(zigzag_matrix.luminance_height, zigzag_matrix.luminance_width,
+                                       zigzag_matrix.chrominance_height, zigzag_matrix.chrominance_width);
+
+    for (int i = 0; i < blocks.luminance_height; i++) {
+        for (int j = 0; j < blocks.luminance_width; j++) {
+            blocks.y_blocks[i][j] = inverse_zigzag_scan(zigzag_matrix.y_zigzag[i][j]);
+        }
+    }
+
+    for (int i = 0; i < blocks.chrominance_height; i++) {
+        for (int j = 0; j < blocks.chrominance_width; j++) {
+            blocks.cb_blocks[i][j] = inverse_zigzag_scan(zigzag_matrix.cb_zigzag[i][j]);
+            blocks.cr_blocks[i][j] = inverse_zigzag_scan(zigzag_matrix.cr_zigzag[i][j]);
+        }
+    }
+
+    return blocks;
 }

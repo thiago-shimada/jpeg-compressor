@@ -63,17 +63,17 @@ void print_uchar_matrix(unsigned char **matrix, int rows, int cols) {
 }
 
 /**
- * @brief prints a 1D array of double values
+ * @brief prints a 1D array of int values
  *
  * This function iterates through the elements of a 1D array
- * and prints each element formatted to three decimal places.
+ * and prints each element.
  *
  * @param array Pointer to the 1D array to be printed
  * @param size Number of elements in the array
  */
-void print_double_array(double *array, int size) {
+void print_int_array(int *array, int size) {
     for (int i = 0; i < size; i++) {
-        printf("%.3lf ", array[i]);
+        printf("%d ", array[i]);
     }
     printf("\n");
 }

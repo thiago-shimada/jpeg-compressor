@@ -49,9 +49,9 @@ int main() {
     print_double_matrix(quantized_result, DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
 
     // Step 4: Zigzag Scan - Reorder the quantized coefficients in a zigzag pattern
-    double *zigzag_array = zigzag_scan(quantized_result);
+    int *zigzag_array = zigzag_scan(quantized_result);
     printf("Zigzag Scanned Result:\n");
-    print_double_array(zigzag_array, DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
+    print_int_array(zigzag_array, DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
 
     // Step 5: Inverse Zigzag Scan - Reorder the zigzag array back to 2D block
     double **inverse_zigzag_result = inverse_zigzag_scan(zigzag_array);
@@ -83,6 +83,7 @@ int main() {
     free_double_matrix(idct_result, DCT_BLOCK_SIZE);
     free_double_matrix(unshifted_result, DCT_BLOCK_SIZE);
     free_double_matrix(test, DCT_BLOCK_SIZE);
+    free(zigzag_array);
 
     return 0;
 }
