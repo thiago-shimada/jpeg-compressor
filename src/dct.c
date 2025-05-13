@@ -97,8 +97,9 @@ double **idct_2d(double **block,
         for (int j = 0; j < DCT_BLOCK_SIZE; j++) {
             result[i][j] = 0.0;
             for (int k = 0; k < DCT_BLOCK_SIZE; k++) {
-                result[i][j] =  round(result[i][j] + (temp[i][k] * cosine_matrix[k][j]));
+                result[i][j] +=  (temp[i][k] * cosine_matrix[k][j]);
             }
+            result[i][j] = round(result[i][j]);
         }
     }
         
