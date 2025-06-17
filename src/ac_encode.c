@@ -23,7 +23,8 @@ void encode_ac(BitWriter* bw, int ac[64]) {
             zero_run = 0;
         }
     }
-   
+    if (zero_run > 0) {
         bitwriter_write_bits(bw, huffman_ac_prefix[0][0]); // EOB
+    }
     
 }

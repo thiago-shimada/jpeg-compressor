@@ -8,6 +8,9 @@
 #include "bitmap.h"
 #include "print.h"
 #include "time.h"
+#include "ac_encode.h"
+#include "dc_encode.h"
+#include "huffman.h"
 
 int main(int argc, char *argv[]) {
     clock_t start, end;
@@ -108,10 +111,218 @@ int main(int argc, char *argv[]) {
     print_int_array(zigzag_matrix.y_zigzag[0][0], DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
     // Free the quantized blocks
     free_dct_blocks(&quantized_blocks);
+
+    //entropy coding
+    BitWriter bit_writer;
+    
+    bitwriter_init(&bit_writer, "saida.bin");
+
+    // Encode the DC coefficients
+    int previous_dc = 0; // Initialize previous DC value
+    for (int i = 0; i < zigzag_matrix.luminance_height; i++) {
+        for (int j = 0; j < zigzag_matrix.luminance_width; j++) {
+            // Encode the DC coefficient for the luminance block
+            int current_dc = zigzag_matrix.y_zigzag[i][j][0]; // DC coefficient is at (0, 0)
+
+            encode_dc(&bit_writer, current_dc, previous_dc);
+            encode_ac(&bit_writer, zigzag_matrix.y_zigzag[i][j]);
+            previous_dc = current_dc; // Update previous DC value
+        }
+    }
+
+    int previous_dc_cb = 0; // Initialize previous DC value for chrominance
+    int previous_dc_cr = 0; // Initialize previous DC value for chrominance
+    for (int i = 0; i < zigzag_matrix.chrominance_height; i++) {
+        for (int j = 0; j < zigzag_matrix.chrominance_width; j++) {
+            // Encode the DC coefficient for the chrominance blocks
+            int current_dc_cb = zigzag_matrix.cb_zigzag[i][j][0]; // DC coefficient is at (0, 0)
+            int current_dc_cr = zigzag_matrix.cr_zigzag[i][j][0]; // DC coefficient is at (0, 0)
+
+            encode_dc(&bit_writer, current_dc_cb, previous_dc_cb);
+
+            encode_ac(&bit_writer, zigzag_matrix.cb_zigzag[i][j]);
+
+            encode_dc(&bit_writer, current_dc_cr, previous_dc_cr);
+
+            encode_ac(&bit_writer, zigzag_matrix.cr_zigzag[i][j]);
+
+            previous_dc_cb = current_dc_cb; // Update previous DC value for chrominance
+            previous_dc_cr = current_dc_cr; // Update previous DC value for chrominance
+        }
+    }
+
+    // Flush the bit writer to write all bits to the file
+    bitwriter_flush(&bit_writer);
+    // Free the Huffman tree
+    //free_huffman_tree(huffman_tree);
+    printf("Entropy coding completed.\n");
+
+    // entropy decoding
+    Huffman_node *huffman_tree = create_huffman_tree();
+
+    // // Initialize a bit reader for entropy decoding
+    BitReader bit_reader;
+
+    bitreader_init(&bit_reader, "saida.bin");
+    // // Decode luminance blocks
+    previous_dc = 0; // Reset previous DC value
+
+    int *block;
+
+    for (int i = 0; i < zigzag_matrix.luminance_height; i++) {
+        for (int j = 0; j < zigzag_matrix.luminance_width; j++) {
+            // Read the DC coefficient for the luminance block
+            int dc_category = read_dc_category(&bit_reader);
+
+            int mantissa = bitreader_read_bits(&bit_reader, dc_category);
+
+            int diff_dc = decode_value(mantissa, dc_category);
+
+            int current_dc = previous_dc + diff_dc; // Differential decoding
+            previous_dc = current_dc; // Update previous DC value
+
+            block = init_int_array(DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
+
+            for (int x = 0; x < DCT_BLOCK_SIZE; x++) {
+                for (int y = 0; y < DCT_BLOCK_SIZE; y++) {
+                    block[x * DCT_BLOCK_SIZE + y] = 0;
+                }
+            }
+
+            block[0] = current_dc;
+
+            int pos = 1;
+
+            while (pos < 64) {
+                Huffman_node *node = read_ac_category(huffman_tree, &bit_reader);
+
+                if (node == NULL) {
+                    break; // Error in reading AC category
+                }
+                int run = node->run;
+                int category = node->category;
+                
+                if (run == 0 && category == 0) {
+                    break; // EOB
+                }
+                
+                int ac_mantissa = bitreader_read_bits(&bit_reader, category);
+                int ac_value = decode_value(ac_mantissa, category);
+
+                for (int z = 0; z < run && pos < 64; z++) block[pos++] = 0;
+                if (pos < 64) block[pos++] = ac_value;
+            }
+            free(zigzag_matrix.y_zigzag[i][j]);
+            zigzag_matrix.y_zigzag[i][j] = block;
+        }
+    }
+
+    printf("---------------------------------\n");
+
+    // Decode chrominance blocks
+    previous_dc_cb = 0; // Reset previous DC value for chrominance
+    previous_dc_cr = 0; // Reset previous DC value for chrominance
+
+    for (int i = 0; i < zigzag_matrix.chrominance_height; i++) {
+        for (int j = 0; j < zigzag_matrix.chrominance_width; j++) {
+            // Read the DC coefficient for the chrominance blue block
+            int dc_category = read_dc_category(&bit_reader);
+
+            int mantissa = bitreader_read_bits(&bit_reader, dc_category);
+
+            int diff_dc = decode_value(mantissa, dc_category);
+
+            int current_dc = previous_dc_cb + diff_dc;
+
+            previous_dc_cb = current_dc; // Update previous DC value
+
+            block = init_int_array(DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
+
+            for (int x = 0; x < DCT_BLOCK_SIZE; x++) {
+                for (int y = 0; y < DCT_BLOCK_SIZE; y++) {
+                    block[x * DCT_BLOCK_SIZE + y] = 0;
+                }
+            }
+            
+            block[0] = current_dc;
+
+            int pos = 1;
+            while (pos < 64) {
+                Huffman_node *node = read_ac_category(huffman_tree, &bit_reader);
+                
+                
+                if (node == NULL) {
+                    break; // Error in reading AC category
+                }
+                int run = node->run;
+                int category = node->category;
+                
+                if (run == 0 && category == 0) {
+                    break; // EOB
+                }
+                
+                int ac_mantissa = bitreader_read_bits(&bit_reader, category);
+                int ac_value = decode_value(ac_mantissa, category);
+
+                for (int z = 0; z < run && pos < 64; z++) block[pos++] = 0;
+                if (pos < 64) block[pos++] = ac_value;
+
+                
+            }
+
+            free(zigzag_matrix.cb_zigzag[i][j]);
+
+            zigzag_matrix.cb_zigzag[i][j] = block;
+
+            dc_category = read_dc_category(&bit_reader);
+
+            mantissa = bitreader_read_bits(&bit_reader, dc_category);
+
+            diff_dc = decode_value(mantissa, dc_category);
+
+            current_dc = previous_dc_cr + diff_dc;
+
+            previous_dc_cr = current_dc; // Update previous DC value
+
+            block = init_int_array(DCT_BLOCK_SIZE * DCT_BLOCK_SIZE);
+
+            for (int x = 0; x < DCT_BLOCK_SIZE; x++) {
+                for (int y = 0; y < DCT_BLOCK_SIZE; y++) {
+                    block[x * DCT_BLOCK_SIZE + y] = 0;
+                }
+            }
+
+            block[0] = current_dc;
+
+            pos = 1;
+
+            while (pos < 64) {
+                Huffman_node *node = read_ac_category(huffman_tree, &bit_reader);
+
+                if (node == NULL) {
+                    break; // Error in reading AC category
+                }
+                int run = node->run;
+                int category = node->category;
+
+                if (run == 0 && category == 0) {
+                    break; // EOB
+                }
+
+                int ac_mantissa = bitreader_read_bits(&bit_reader, category);
+                int ac_value = decode_value(ac_mantissa, category);
+
+                for (int z = 0; z < run && pos < 64; z++) block[pos++] = 0;
+                if (pos < 64) block[pos++] = ac_value;
+            }
+            free(zigzag_matrix.cr_zigzag[i][j]);
+            zigzag_matrix.cr_zigzag[i][j] = block;
+        }
+    }
+
     // Convert zigzag arrays back to DCT blocks
     quantized_blocks = arrays_to_blocks(zigzag_matrix);
 
-    print_double_matrix(quantized_blocks.y_blocks[0][0], DCT_BLOCK_SIZE, DCT_BLOCK_SIZE);
     // Free the zigzag matrix
     free_zigzag_matrix(&zigzag_matrix);
     
