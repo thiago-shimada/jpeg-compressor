@@ -3,7 +3,7 @@
 #include "bitstream.h"
 
 void bitwriter_init(BitWriter* bw, const char* filename) {
-    bw->file = fopen(filename, "wb");
+    bw->file = fopen(filename, "ab");
     bw->buffer = 0;
     bw->bits_filled = 0;
 }
