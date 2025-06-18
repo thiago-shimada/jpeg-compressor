@@ -42,6 +42,12 @@ int main(int argc, char *argv[]) {
 
     bitreader_init(&bit_reader, argv[1]);
 
+    // After load_bmp_header(fp, &file_header, &info_header);
+    fseek(fp, file_header.OffBits, SEEK_SET);
+
+    fclose(bit_reader.file); // Close the file to reset the file pointer
+
+
     //jump the header
 
     bit_reader.file = fp;
@@ -51,9 +57,8 @@ int main(int argc, char *argv[]) {
 
     int *block;
 
-    
-    int luminance_height = info_header.Width / DCT_BLOCK_SIZE;
-    int luminance_width = info_header.Height / DCT_BLOCK_SIZE;
+    int luminance_height = info_header.Height / DCT_BLOCK_SIZE;
+    int luminance_width = info_header.Width / DCT_BLOCK_SIZE;
 
     int chrominance_height = (luminance_height / 2) + (luminance_height / 2) % 2;
     int chrominance_width = (luminance_width / 2) + (luminance_width / 2) % 2;
